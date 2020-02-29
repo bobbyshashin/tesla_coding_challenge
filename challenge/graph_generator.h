@@ -34,6 +34,7 @@ class GraphGenerator {
       // edges_.push_back(std::vector<double>(num_nodes_, -1.0));
       costs_.push_back(std::numeric_limits<double>::max());
       visited_.push_back(false);
+      parents_.push_back(-1);
     }
     unit_range_ = max_range_ / (discretization_factor_ - 1);
   }
@@ -116,6 +117,7 @@ class GraphGenerator {
       if (curr_charger_id == goal_id) {
         std::cout << "Goal found!" << std::endl;
         std::cout << "Cost: " << costs_[curr_node_id] << std::endl;
+        printPath(curr_node_id);
         return;
       }
 
@@ -133,11 +135,39 @@ class GraphGenerator {
             costs_[next.first] = new_cost;
             // push into open_list
             open_list_.push(
-                {new_cost + distances_[next_charger_id][goal_id] + next.first % discretization_factor_ * unit_range_ / network_[next_charger_id].rate, next.first});
+                {new_cost, next.first});
             // update parent
+            parents_[next.first] = curr_node_id;
           }
         }
       }
+    }
+  }
+  void printPath(int goal_node_id) {
+    
+    int parent_id = parents_[goal_node_id];
+    std::vector<std::string> chargers;
+    std::vector<double> charging_time;
+
+    int goal_id = goal_node_id / discretization_factor_;
+    charging_time.push_back(goal_node_id % discretization_factor_ * unit_range_ / network_[goal_id].rate);
+    chargers.push_back(network_[goal_id].name);
+
+    while (parent_id != -1) {
+      int counter = 0;
+      while (parents_[parent_id] / discretization_factor_ == parent_id / discretization_factor_) {
+        ++counter;
+        parent_id = parents_[parent_id];
+      }
+      int charger_id = parent_id / discretization_factor_;
+      charging_time.push_back(counter * unit_range_ / network_[charger_id].rate);
+      chargers.push_back(network_[charger_id].name);
+
+      parent_id = parents_[parent_id];
+    }
+
+    for (int i=chargers.size()-1; i>=0; --i) {
+      std::cout << "Charger: " << chargers[i] << ", time: " << charging_time[i] << std::endl;
     }
   }
 
@@ -179,6 +209,7 @@ class GraphGenerator {
   std::unordered_map<int, std::vector<std::pair<int, double>>> edges_;
   std::vector<double> costs_;
   std::vector<bool> visited_;
+  std::vector<int> parents_;
   std::priority_queue<std::pair<double, int>,
                       std::vector<std::pair<double, int>>,
                       std::greater<std::pair<double, int>>>

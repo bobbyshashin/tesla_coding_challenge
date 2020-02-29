@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
   std::string goal_charger_name = argv[2];
 
   // std::cout << network.size() << std::endl;
-  GraphGenerator* g = new GraphGenerator(network, 321, 320, 105);
+  GraphGenerator* g = new GraphGenerator(network, 101, 320, 105);
   std::cout << "Done creating graph generator" << std::endl;
   g->generateGraph();
   std::cout << "Done generating graph" << std::endl;
