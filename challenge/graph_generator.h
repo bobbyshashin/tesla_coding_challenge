@@ -23,21 +23,18 @@ class GraphGenerator {
         discretization_factor_(discretization_factor),
         max_range_(max_range),
         speed_(speed) {
-    std::cout << "111" << std::endl;
     num_nodes_ = num_chargers_ * discretization_factor_;
     // initialize the distance matrix with all zeros
     for (int i = 0; i < num_chargers_; ++i) {
       distances_.push_back(std::vector<double>(num_chargers_, 0.0));
     }
-    std::cout << "222" << std::endl;
     // initialize the edges with default -1.0 (invalid)
     std::cout << num_nodes_ << std::endl;
     for (int i = 0; i < num_nodes_; ++i) {
-      edges_.push_back(std::vector<double>(num_nodes_, -1.0));
+      // edges_.push_back(std::vector<double>(num_nodes_, -1.0));
       costs_.push_back(std::numeric_limits<double>::max());
       visited_.push_back(false);
     }
-    std::cout << "333" << std::endl;
     unit_range_ = max_range_ / (discretization_factor_ - 1);
   }
 
@@ -64,17 +61,23 @@ class GraphGenerator {
         if (id1 == id2) {
           // these two nodes belong to the same charger
           if (r2 - r1 == 1) {
-            // the time it takes to charge for 1 unit range
-            edges_[i][j] = unit_range_ / network[id1].rate;
+              // the time it takes to charge for 1 unit range
+            // edges_[i][j] = unit_range_ / network[id1].rate;
+            edges_[i].push_back({j, unit_range_ / network[id1].rate});
+            // std::cout << "Edge added for " << network_[id1].name << " to "
+            //           << network_[id2].name
+            //           << " with cost: " << edges_[i][j]
+            //           << std::endl;
           }
         } else {
           // different chargers
           if ((r1 - r2) * unit_range_ >= distances_[id1][id2]) {
-            std::cout << "Edge added for " << network_[id1].name << " to "
-                      << network_[id2].name
-                      << " with cost: " << distances_[id1][id2] / speed_
-                      << std::endl;
-            edges_[i][j] = distances_[id1][id2] / speed_;
+            // std::cout << "Edge added for " << network_[id1].name << " to "
+            //           << network_[id2].name
+            //           << " with cost: " << distances_[id1][id2] / speed_
+            //           << std::endl;
+            // edges_[i][j] = distances_[id1][id2] / speed_;
+            edges_[i].push_back({j, distances_[id1][id2] / speed_});
           }
         }
       }
@@ -97,7 +100,7 @@ class GraphGenerator {
 
     costs_[start_node_id] = 0.0;
 
-    visited_[start_id] = true;
+    visited_[start_node_id] = true;
     open_list_.push({heuristic, start_node_id});
 
     while (!open_list_.empty()) {
@@ -109,25 +112,28 @@ class GraphGenerator {
       int curr_charger_id = curr_node_id / discretization_factor_;
       int curr_range = curr_node_id % discretization_factor_ * unit_range_;
       visited_[curr_node_id] = true;
-      std::cout << network_[curr_charger_id].name << std::endl;
+      // std::cout << network_[curr_charger_id].name << std::endl;
       if (curr_charger_id == goal_id) {
         std::cout << "Goal found!" << std::endl;
         std::cout << "Cost: " << costs_[curr_node_id] << std::endl;
         return;
       }
 
-      for (int i = 0; i < num_nodes_; ++i) {
-        int next_charger_id = i / discretization_factor_;
-        if (edges_[curr_node_id][i] != -1.0 && !visited_[i]) {
+      // for (int i = 0; i < num_nodes_; ++i) {
+        for (const auto& next : edges_[curr_node_id]) {
+        int next_charger_id = next.first / discretization_factor_;
+        // if (edges_[curr_node_id][i] != -1.0 && !visited_[i]) {
+          if (!visited_[next.first]) {
           // a valid edge and target node not fully explored yet
-          double new_cost = curr_cost + edges_[curr_node_id][i];
-          std::cout << new_cost << std::endl;
-          if (new_cost < costs_[i]) {
+          // double new_cost = curr_cost + edges_[curr_node_id][i];
+          double new_cost = curr_cost + next.second;
+          // std::cout << new_cost << std::endl;
+          if (new_cost < costs_[next.first]) {
             // update cost
-            costs_[i] = new_cost;
+            costs_[next.first] = new_cost;
             // push into open_list
             open_list_.push(
-                {new_cost + distances_[next_charger_id][goal_id], i});
+                {new_cost + distances_[next_charger_id][goal_id] + next.first % discretization_factor_ * unit_range_ / network_[next_charger_id].rate, next.first});
             // update parent
           }
         }
@@ -169,7 +175,8 @@ class GraphGenerator {
   // std::unordered_map<int, row> charger_dict_;
   std::array<row, 303> network_;
   std::vector<std::vector<double>> distances_;
-  std::vector<std::vector<double>> edges_;
+  // std::vector<std::vector<double>> edges_;
+  std::unordered_map<int, std::vector<std::pair<int, double>>> edges_;
   std::vector<double> costs_;
   std::vector<bool> visited_;
   std::priority_queue<std::pair<double, int>,
