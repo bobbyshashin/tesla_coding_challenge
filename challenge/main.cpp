@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   std::string initial_charger_name = argv[1];
   std::string goal_charger_name = argv[2];
 
-  int discretization_factor = 81;
+  int discretization_factor = 41;
   int max_range = 320;
   int max_speed = 105;
 
