@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <memory>
+#include <cmath>
 #include <queue>
 #include <string>
 #include <unordered_map>
@@ -134,8 +135,9 @@ class GraphGenerator {
             // update cost
             costs_[next.first] = new_cost;
             // push into open_list
+            double h = distances_[next_charger_id][goal_id] / speed_;
             open_list_.push(
-                {new_cost, next.first});
+                {new_cost+h, next.first});
             // update parent
             parents_[next.first] = curr_node_id;
           }
@@ -167,7 +169,7 @@ class GraphGenerator {
     }
 
     for (int i=chargers.size()-1; i>=0; --i) {
-      std::cout << "Charger: " << chargers[i] << ", time: " << charging_time[i] << std::endl;
+      std::cout << chargers[i] << ", " << charging_time[i] << std::endl;
     }
   }
 
@@ -189,11 +191,11 @@ class GraphGenerator {
   }
 
  private:
-  inline double deg2Rad(double deg) const { return deg * pi_ / 180; }
+  inline double deg2Rad(double deg) const { return deg * M_PI / 180; }
   double calcDistance(double lat1, double lon1, double lat2, double lon2) const;
   // assuming earth is a sphere with radius 6356.752km
   double earth_radius_ = 6356.752;
-  double pi_ = 3.14159265;
+  // double pi_ = 3.14159265;
 
   int num_chargers_;
   int num_nodes_;
