@@ -1,0 +1,2 @@
+How to compile:
+g++ main.cpp network.cpp graph_generator.cpp -std=c++11 -O1 -o candidate_solution

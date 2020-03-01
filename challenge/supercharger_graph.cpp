@@ -1,13 +1,13 @@
-#include "graph_generator.h"
+#include "supercharger_graph.h"
 
-std::unique_ptr<GraphGenerator> GraphGenerator::Make(
+std::unique_ptr<SuperchargerGraph> SuperchargerGraph::Make(
     double discretization_factor, double max_range, double speed) {
-  return std::unique_ptr<GraphGenerator>(
-      new GraphGenerator(discretization_factor, max_range, speed));
+  return std::unique_ptr<SuperchargerGraph>(
+      new SuperchargerGraph(discretization_factor, max_range, speed));
 }
 
-GraphGenerator::GraphGenerator(double discretization_factor, double max_range,
-                               double speed)
+SuperchargerGraph::SuperchargerGraph(double discretization_factor,
+                                     double max_range, double speed)
     : num_chargers_(network.size()),
       discretization_factor_(discretization_factor),
       num_nodes_(num_chargers_ * discretization_factor_),
@@ -19,7 +19,7 @@ GraphGenerator::GraphGenerator(double discretization_factor, double max_range,
       visited_(num_nodes_, false),
       parents_(num_nodes_, -1) {}
 
-void GraphGenerator::generateGraph() {
+void SuperchargerGraph::generateGraph() {
   // calculate and fill the distance matrix
   for (int i = 0; i < num_chargers_; ++i) {
     for (int j = i + 1; j < num_chargers_; ++j) {
@@ -57,7 +57,8 @@ void GraphGenerator::generateGraph() {
   }
 }
 
-void GraphGenerator::search(const std::string& start, const std::string& goal) {
+void SuperchargerGraph::search(const std::string& start,
+                               const std::string& goal) {
   // try to find start and goal supercharger in the network
   int start_id = findChargerID(start);
   int goal_id = findChargerID(goal);
@@ -123,18 +124,18 @@ void GraphGenerator::search(const std::string& start, const std::string& goal) {
             << goal << std::endl;
 }
 
-double GraphGenerator::calcDistance(double lat1, double lon1, double lat2,
-                                    double lon2) const {
+double SuperchargerGraph::calcDistance(double lat1, double lon1, double lat2,
+                                       double lon2) const {
   return earth_radius_ * acos(sin(deg2Rad(lat1)) * sin(deg2Rad(lat2)) +
                               cos(deg2Rad(lat1)) * cos(deg2Rad(lat2)) *
                                   cos(deg2Rad(fabs(lon1 - lon2))));
 }
 
-double GraphGenerator::calcHeuristics(int id1, int id2) const {
+double SuperchargerGraph::calcHeuristics(int id1, int id2) const {
   return distances_[id1][id2] / speed_;
 }
 
-int GraphGenerator::findChargerID(const std::string& name) const {
+int SuperchargerGraph::findChargerID(const std::string& name) const {
   for (int i = 0; i < network.size(); ++i) {
     if (network[i].name == name) {
       return i;
@@ -143,7 +144,7 @@ int GraphGenerator::findChargerID(const std::string& name) const {
   return -1;
 }
 
-std::string GraphGenerator::findChargerName(int id) const {
+std::string SuperchargerGraph::findChargerName(int id) const {
   if (id < 0 || id >= network.size()) {
     std::cout << "Error: invalid charger id: " << id << "!" << std::endl;
     return std::string();
@@ -151,7 +152,7 @@ std::string GraphGenerator::findChargerName(int id) const {
   return network[id].name;
 }
 
-void GraphGenerator::backtracePath(int goal_node_id) {
+void SuperchargerGraph::backtracePath(int goal_node_id) {
   int parent_id = parents_[goal_node_id];
   std::vector<std::string> chargers;
   std::vector<double> charging_time;
@@ -180,5 +181,5 @@ void GraphGenerator::backtracePath(int goal_node_id) {
   for (int i = chargers.size() - 2; i > 0; --i) {
     std::cout << chargers[i] << ", " << charging_time[i] << ", ";
   }
-  std::cout << chargers[0];
+  std::cout << chargers[0] << std::endl;
 }

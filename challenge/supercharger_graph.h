@@ -1,5 +1,5 @@
-#ifndef GRAPH_GENERATOR_H_
-#define GRAPH_GENERATOR_H_
+#ifndef SUPERCHARGER_GRAPH_H_
+#define SUPERCHARGER_GRAPH_H_
 
 #include <cmath>
 #include <limits>
@@ -10,13 +10,14 @@
 #include <vector>
 #include "network.h"
 
-class GraphGenerator {
+class SuperchargerGraph {
  public:
   // delete the default constructor
-  GraphGenerator() = delete;
+  SuperchargerGraph() = delete;
   // static Maker function
-  static std::unique_ptr<GraphGenerator> Make(double discretization_factor,
-                                              double max_range, double speed);
+  static std::unique_ptr<SuperchargerGraph> Make(double discretization_factor,
+                                                 double max_range,
+                                                 double speed);
 
   // Generate the graph
   void generateGraph();
@@ -26,7 +27,8 @@ class GraphGenerator {
 
  private:
   // Private constructor
-  GraphGenerator(double discretization_factor, double max_range, double speed);
+  SuperchargerGraph(double discretization_factor, double max_range,
+                    double speed);
 
   // Backtrace to find and output the optimal path
   void backtracePath(int goal_id);
@@ -51,10 +53,10 @@ class GraphGenerator {
 
   // Helper functions to convert a discretized node id to the corresponding
   // charger id / range id (how much portion it is charged)
-  inline int getChargerID(int node_id) {
+  inline int getChargerID(int node_id) const {
     return node_id / discretization_factor_;
   }
-  inline int getRangeID(int node_id) {
+  inline int getRangeID(int node_id) const {
     return node_id % discretization_factor_;
   }
 

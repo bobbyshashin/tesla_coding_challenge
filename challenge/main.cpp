@@ -1,5 +1,5 @@
-#include "graph_generator.h"
 #include "network.h"
+#include "supercharger_graph.h"
 
 int main(int argc, char** argv) {
   if (argc != 3) {
@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
   int max_range = 320;
   int max_speed = 105;
 
-  auto g = GraphGenerator::Make(discretization_factor, max_range, max_speed);
+  auto g = SuperchargerGraph::Make(discretization_factor, max_range, max_speed);
   g->generateGraph();
   g->search(initial_charger_name, goal_charger_name);
 
