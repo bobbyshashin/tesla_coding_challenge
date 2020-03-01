@@ -11,12 +11,13 @@ int main(int argc, char** argv) {
   std::string initial_charger_name = argv[1];
   std::string goal_charger_name = argv[2];
 
-  // std::cout << network.size() << std::endl;
-  GraphGenerator* g = new GraphGenerator(network, 81, 320, 105);
-  std::cout << "Done creating graph generator" << std::endl;
+  int discretization_factor = 81;
+  int max_range = 320;
+  int max_speed = 105;
+
+  auto g = GraphGenerator::Make(discretization_factor, max_range, max_speed);
   g->generateGraph();
-  std::cout << "Done generating graph" << std::endl;
   g->search(initial_charger_name, goal_charger_name);
-  std::cout << "Done searching graph" << std::endl;
+
   return 0;
 }
